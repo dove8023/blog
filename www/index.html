@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        section {
+            border: 1px solid black;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        li.list {
+            border-bottom: 1px solid green;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        li.hover:hover {
+            background: rgb(211, 194, 194);
+            cursor: pointer;
+        }
+
+        html,
+        body {
+            min-height: 100%;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        .loading {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding-top: 200px;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            background: rgba(0, 0, 0, 0.8);
+            line-height: 100%;
+            font-size: 30px;
+            color: #fff;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <h1>美亚供应商流程</h1>
+
+        <button v-on:click="tapChange('ordered')">订票流程</button>
+        <button v-on:click="tapChange('orderList')">订票单查看</button>
+        <button v-on:click="tapChange('changeList')">改签单查看</button>
+        <button v-on:click="tapChange('returnList')">退票单查看</button>
+        <hr>
+
+        <div v-if="domShow.ordered">
+            <h3>订票流程</h3>
+
+            <section>
+                <h3>机票查询选择</h3>
+                <p>
+                    <label>
+                        出发城市：
+                        <input type="text" v-model="searchParam.originCity">
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        到达城市：
+                        <input type="text" v-model="searchParam.depatureCity">
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        出发日期(测试选择3个月之后)
+                        <input type="date" v-model="searchParam.date">
+                    </label>
+                </p>
+                <button v-on:click="searchSubmit">查询机票</button>
+            </section>
+
+            <section v-if="searchResult">
+                <h3>机票查询结果(点击订票)</h3>
+                <ol>
+                    <li class="list hover" v-on:click="orderTicket(item)" v-for="item in searchData">
+                        航空公司: {{item.airline}}
+                        <br> {{item.departure}} {{item.depDate}} {{item.depTime}} --- {{item.arrival}} {{item.arrDate}} {{item.arrTime}}
+                        <br> 价格: {{item.flightPriceInfoList[0].price}}
+                    </li>
+                </ol>
+            </section>
+        </div>
+
+        <div v-if="domShow.orderList">
+            <h3>订票单查看</h3>
+            <ol>
+                <li v-for="item in orderList" class="list">
+                    订单状态: {{item.baseInfo.statusText}}
+                    <br> 订单创建时间:{{item.baseInfo.opDate}}
+                    <br> 乘机人:{{item.passengerList[0].passengerName}}
+                    <br> 票价:{{item.priceList[0].price}}
+                    <br>
+                    <button v-if="item.baseInfo.statusText=='已出票'" v-on:click="orderOperation.change(item)">改签</button>
+                    <button v-if="item.baseInfo.statusText=='已出票'" v-on:click="orderOperation.return(item)">退票</button>
+
+                    <button v-if="item.baseInfo.statusText!='已出票'" v-on:click="orderOperation.delete(item)">取消</button>
+                    <button v-if="item.baseInfo.statusText!='已出票'" v-on:click="orderOperation.confirm(item)">提交</button>
+                </li>
+            </ol>
+        </div>
+
+        <div v-if="domShow.changeList">
+            <h3>改签单查看</h3>
+            <ol>
+                <li v-for="item in changeList" class="list">
+                    订单状态: {{item.baseInfo.statusText}}
+                    <br> 订单创建时间:{{item.baseInfo.opDate}}
+                    <br> 乘机人:{{item.passengerList[0].passengerName}}
+                    <br> 票价:{{item.priceList[0].price}}
+                    <br>
+                    <button v-if="item.baseInfo.statusText == '待核对'" v-on:click="changeOperation.delete(item)">取消改签单</button>
+                    <button v-if="item.baseInfo.statusText == '待核对'" v-on:click="changeOperation.confirm(item)">确认改签单</button>
+                </li>
+            </ol>
+        </div>
+
+        <div v-if="domShow.returnList">
+            <h3>退票单查看</h3>
+            <ol>
+                <li v-for="item in returnList" class="list">
+                    订单状态: {{item.baseInfo.statusText}}
+                    <br> 订单创建时间:{{item.baseInfo.opDate}}
+                    <br> 乘机人:{{item.passengerList[0].passengerName}}
+                    <br> 票价:{{item.priceList[0].price}}
+                    <br>
+                    <button v-if="item.baseInfo.statusText == '待核对'" v-on:click="returnOperation.delete(item)">取消退票单</button>
+                    <button v-if="item.baseInfo.statusText == '待核对'" v-on:click="returnOperation.confirm(item)">确认退票单</button>
+                </li>
+            </ol>
+        </div>
+
+
+        <!-- loading -->
+        <div class="loading" v-if="loading">
+            loading...
+        </div>
+    </div>
+</body>
+
+</html>
+<script src="dist/vue.min.js"></script>
+<script src="dist/index.js"></script>

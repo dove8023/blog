@@ -1,10 +1,11 @@
-let express = require("express");
-let http = require("http");
-let path = require("path");
-let app = express();
+/*
+ * @Author: Mr.He 
+ * @Date: 2017-11-18 16:47:05 
+ * @Last Modified by:   Mr.He 
+ * @Last Modified time: 2017-11-18 16:47:05 
+ */
+'use strict';
 
-app.use(express.static(path.join(__dirname, "./www")));
-
-http.createServer(app).listen(3000, ()=>{
-    console.log("server running");
-})
+require('app-module-path').addPath(__dirname);
+require("ts-node").register({});
+require("./main");
